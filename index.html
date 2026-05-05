@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GearHead Mods - Car Game Modding Hub</title>
+    <style>
+        :root {
+            --bg-primary: #0d0f12;
+            --bg-secondary: #161a1f;
+            --bg-card: #1c2027;
+            --bg-sidebar: #12151a;
+            --border: #2a2e36;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0ab;
+            --text-muted: #6b7280;
+            --accent: #f04e23;
+            --accent-hover: #d1431e;
+            --accent-glow: rgba(240, 78, 35, 0.25);
+            --blue-accent: #3b82f6;
+            --green-accent: #10b981;
+            --card-hover-border: #3e4450;
+            --badge-bg: #252a33;
+            --scrollbar-thumb: #2e3440;
+            --scrollbar-track: #161a1f;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e4652;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(22, 26, 31, 0.92);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .header-logo .icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .header-logo span {
+            background: linear-gradient(135deg, #f04e23, #ff7b50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+        .header-nav a:hover,
+        .header-nav a.active {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+        .header-nav a.upload-btn {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            margin-left: 8px;
+        }
+        .header-nav a.upload-btn:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+        }
+        .mobile-menu-btn:hover {
+            background: var(--bg-card);
+        }
+
+        /* ========== LAYOUT ========== */
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1500px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 0;
+        }
+
+        /* ========== SIDEBAR / FILTER PANEL ========== */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+            transition: transform var(--transition-normal);
+        }
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            position: fixed;
+            z-index: 99;
+            height: 100vh;
+            top: 0;
+            padding-top: 80px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 98;
+        }
+        .sidebar-overlay.visible {
+            display: block;
+        }
+
+        .sidebar-section {
+            margin-bottom: 4px;
+        }
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 10px 8px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        .sidebar-section-title .arrow {
+            transition: transform var(--transition-fast);
+            font-size: 0.6rem;
+        }
+        .sidebar-section.collapsed .sidebar-section-title .arrow {
+            transform: rotate(-90deg);
+        }
+        .sidebar-section.collapsed .filter-list {
+            display: none;
+        }
+
+        .filter-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .filter-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            user-select: none;
+            font-weight: 450;
+        }
+        .filter-list li:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .filter-list li.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .filter-list li .count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--badge-bg);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .filter-list li.active .count {
+            background: rgba(240, 78, 35, 0.2);
+            color: var(--accent);
+        }
+        .filter-list li .color-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Search in sidebar */
+        .sidebar-search {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .sidebar-search input {
+            width: 100%;
+            padding: 9px 12px 9px 36px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+        .sidebar-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .sidebar-search .search-icon {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        /* ========== CONTENT AREA ========== */
+        .content {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+        }
+
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .content-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+        .content-header .result-count {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .active-filter-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .active-filter-tag:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        .active-filter-tag .remove {
+            font-weight: 700;
+            font-size: 1rem;
+            line-height: 1;
+            color: var(--text-muted);
+        }
+        .active-filter-tag:hover .remove {
+            color: #e74c3c;
+        }
+
+        /* Sort bar */
+        .sort-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .sort-bar span {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .sort-option {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .sort-option:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+        .sort-option.active {
+            background: var(--bg-card);
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ========== MOD CARDS GRID ========== */
+        .mods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .mod-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .mod-card:hover {
+            border-color: var(--card-hover-border);
+            box-shadow: var(--shadow-card-hover);
+            transform: translateY(-2px);
+        }
+        .mod-card-image {
+            position: relative;
+            aspect-ratio: 16 / 10;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: #2a3040;
+        }
+        .mod-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .mod-card-image .placeholder-car {
+            font-size: 4rem;
+            opacity: 0.5;
+        }
+        .mod-card-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            z-index: 2;
+        }
+        .badge-new {
+            background: var(--green-accent);
+            color: #000;
+        }
+        .badge-popular {
+            background: var(--blue-accent);
+            color: #fff;
+        }
+        .badge-updated {
+            background: #f59e0b;
+            color: #000;
+        }
+        .mod-card-favorite {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            backdrop-filter: blur(4px);
+        }
+        .mod-card-favorite:hover {
+            background: rgba(240, 78, 35, 0.6);
+            transform: scale(1.1);
+        }
+        .mod-card-favorite.liked {
+            color: #e74c3c;
+        }
+        .mod-card-body {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .mod-card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            color: var(--text-primary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .mod-card-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .mod-card-meta .separator {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .mod-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .mod-card-stats {
+            display: flex;
+            gap: 10px;
+        }
+        .mod-card-stats span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .mod-card-author {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mod-card-author .avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3b4252;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+        .empty-state h3 {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .empty-state button {
+            margin-top: 14px;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
+        }
+        .empty-state button:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 900px) {
+            .sidebar {
+                position: fixed;
+                z-index: 99;
+                height: 100vh;
+                top: 0;
+                padding-top: 80px;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.visible {
+                display: block;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .header-nav a {
+                display: none;
+            }
+            .header-nav a.upload-btn {
+                display: flex;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .content {
+                padding: 16px 12px;
+            }
+            .mods-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 10px;
+            }
+            .content-header h1 {
+                font-size: 1.2rem;
+            }
+        }
+        @media (max-width: 500px) {
+            .mods-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .mod-card-body {
+                padding: 10px;
+            }
+            .mod-card-title {
+                font-size: 0.82rem;
+            }
+            .sort-bar {
+                gap: 4px;
+            }
+            .sort-option {
+                padding: 5px 10px;
+                font-size: 0.72rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <a href="#" class="header-logo">
+            <div class="icon">🏎️</div>
+            <span>GearHead Mods</span>
+        </a>
+        <nav class="header-nav">
+            <a href="#" class="active">Browse</a>
+            <a href="#">Collections</a>
+            <a href="#">Tutorials</a>
+            <a href="#">Forum</a>
+            <a href="#" class="upload-btn">+ Upload Mod</a>
+        </nav>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle filters">☰</button>
+    </header>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="main-container">
+        <!-- SIDEBAR FILTERS -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Search -->
+            <div class="sidebar-search">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="sidebarSearch" placeholder="Search mods..." />
+            </div>
+
+            <!-- Manufacturer Filter -->
+            <div class="sidebar-section" id="manufacturerSection">
+                <div class="sidebar-section-title" data-section="manufacturerSection">
+                    🏭 Manufacturer <span class="arrow">▼</span>
+                </div>
+                <ul class="filter-list" id="manufacturerFilters">
+                    <!-- Populated by JS -->
+                </ul>
+            </div>
+
+            <!-- Model Filter -->
+            <div class="sidebar-section" id="modelSection">
+                <div class="sidebar-section-title" data-section="modelSection">
+                    🚗 Model <span class="arrow">▼</span>
+                </div>
+                <ul class="filter-list" id="modelFilters">
+                    <!-- Populated dynamically based on manufacturer selection -->
+                </ul>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="sidebar-section" id="categorySection">
+                <div class="sidebar-section-title" data-section="categorySection">
+                    📦 Category <span class="arrow">▼</span>
+                </div>
+                <ul class="filter-list" id="categoryFilters">
+                    <li data-filter="category" data-value="all" class="active">All Categories <span class="count">24</span></li>
+                    <li data-filter="category" data-value="body-kits">Body Kits <span class="count">8</span></li>
+                    <li data-filter="category" data-value="engine">Engine Parts <span class="count">6</span></li>
+                    <li data-filter="category" data-value="wheels">Wheels & Tires <span class="count">4</span></li>
+                    <li data-filter="category" data-value="paint">Paint & Wraps <span class="count">3</span></li>
+                    <li data-filter="category" data-value="sound">Sound Mods <span class="count">2</span></li>
+                    <li data-filter="category" data-value="handling">Handling <span class="count">1</span></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content" id="contentArea">
+            <div class="content-header">
+                <div>
+                    <h1>Browse Mods</h1>
+                    <p class="result-count" id="resultCount">Showing 24 mods</p>
+                </div>
+            </div>
+
+            <!-- Active filter tags -->
+            <div class="active-filters" id="activeFilters"></div>
+
+            <!-- Sort bar -->
+            <div class="sort-bar">
+                <span>Sort by:</span>
+                <span class="sort-option active" data-sort="popular">🔥 Popular</span>
+                <span class="sort-option" data-sort="newest">🆕 Newest</span>
+                <span class="sort-option" data-sort="downloads">⬇ Downloads</span>
+                <span class="sort-option" data-sort="rating">⭐ Rating</span>
+            </div>
+
+            <!-- Mods Grid -->
+            <div class="mods-grid" id="modsGrid">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Empty state (hidden by default) -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="icon">🔧</div>
+                <h3>No mods found</h3>
+                <p>Try adjusting your filters or search terms.</p>
+                <button id="clearAllFilters">Clear All Filters</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DATA ============
+            const manufacturers = [
+                { name: 'Toyota', models: ['Supra MK4', 'Supra MK5', 'GT86', 'AE86 Trueno', 'Celica GT-Four',
+                        'MR2', 'Corolla GR'
+                    ] },
+                { name: 'Nissan', models: ['GT-R R34', 'GT-R R35', 'Silvia S15', '350Z', '370Z', '240SX',
+                        'Skyline R32'
+                    ] },
+                { name: 'BMW', models: ['M3 E46', 'M3 E92', 'M4 G82', 'M5 F90', 'Z4', 'M2 Competition'] },
+                { name: 'Ford', models: ['Mustang GT', 'Mustang Shelby GT500', 'Focus RS', 'F-150 Raptor',
+                        'GT40', 'Escort RS Cosworth'
+                    ] },
+                { name: 'Chevrolet', models: ['Camaro SS', 'Corvette C8', 'Corvette Z06', 'Chevelle SS',
+                        'Silverado', 'Impala SS'
+                    ] },
+                { name: 'Honda', models: ['Civic Type R', 'NSX', 'S2000', 'Integra Type R', 'Accord',
+                        'CR-X SiR'
+                    ] },
+                { name: 'Mazda', models: ['RX-7 FD', 'RX-8', 'MX-5 Miata', 'Mazda 3', 'Mazda 6 MPS'] },
+                { name: 'Porsche', models: ['911 GT3 RS', '911 Turbo S', 'Cayman GT4', '918 Spyder',
+                        'Panamera Turbo'
+                    ] },
+                { name: 'Subaru', models: ['WRX STI', 'BRZ', 'Impreza 22B', 'Legacy GT', 'Forester STI'] },
+                { name: 'Mercedes', models: ['AMG GT', 'C63 AMG', 'E63 AMG', 'SLS AMG', 'A45 AMG'] },
+            ];
+
+            const categories = ['body-kits', 'engine', 'wheels', 'paint', 'sound', 'handling'];
+            const badgeTypes = ['badge-new', 'badge-popular', 'badge-updated', null];
+            const badgeLabels = ['New', 'Popular', 'Updated', null];
+
+            // Generate mods
+            let allMods = [];
+            let modId = 0;
+
+            manufacturers.forEach((mfr) => {
+                mfr.models.forEach((model) => {
+                    // Generate 1-3 mods per model
+                    const modsPerModel = Math.floor(Math.random() * 2) + 1;
+                    for (let i = 0; i < modsPerModel; i++) {
+                        const cat = categories[Math.floor(Math.random() * categories.length)];
+                        const badgeIdx = Math.floor(Math.random() * badgeTypes.length);
+                        const downloads = Math.floor(Math.random() * 95000) + 5000;
+                        const rating = (Math.random() * 2 + 3).toFixed(1); // 3.0 - 5.0
+                        const daysAgo = Math.floor(Math.random() * 180) + 1;
+                        const authorNames = ['SpeedDemon', 'TurboModder', 'DriftKing', 'GarageX', 'NitroLabs',
+                            'CarbonFiber', 'WrenchMaster', 'BoostedGarage'
+                        ];
+                        const author = authorNames[Math.floor(Math.random() * authorNames.length)];
+
+                        const modTypes = {
+                            'body-kits': ['Widebody Kit', 'Front Bumper', 'Rear Diffuser', 'Side Skirts',
+                                'Carbon Hood', 'Spoiler Wing', 'Full Aero Kit', 'Fender Flares'
+                            ],
+                            'engine': ['Stage 2 Turbo', 'Performance Intake', 'Race Exhaust', 'ECU Tune',
+                                'Supercharger Kit', 'Intercooler Upgrade'
+                            ],
+                            'wheels': ['Forged Rims', 'Deep Dish Wheels', 'Racing Slicks', 'Stanced Package'],
+                            'paint': ['Metallic Wrap', 'Carbon Livery', 'Race Stripes'],
+                            'sound': ['Aggressive Exhaust Note', 'Turbo Spool Sound'],
+                            'handling': ['Coilover Suspension'],
+                        };
+                        const modTypeNames = modTypes[cat] || ['Custom Mod'];
+                        const modTypeName = modTypeNames[Math.floor(Math.random() * modTypeNames.length)];
+
+                        allMods.push({
+                            id: modId++,
+                            manufacturer: mfr.name,
+                            model: model,
+                            category: cat,
+                            title: `${mfr.name} ${model} - ${modTypeName}`,
+                            downloads: downloads,
+                            rating: parseFloat(rating),
+                            daysAgo: daysAgo,
+                            author: author,
+                            badgeType: badgeTypes[badgeIdx],
+                            badgeLabel: badgeLabels[badgeIdx],
+                            likes: Math.floor(Math.random() * 2000) + 100,
+                        });
+                    }
+                });
+            });
+
+            // ============ STATE ============
+            let activeManufacturer = 'all';
+            let activeModel = 'all';
+            let activeCategory = 'all';
+            let activeSort = 'popular';
+            let searchQuery = '';
+
+            // ============ DOM REFS ============
+            const manufacturerFiltersEl = document.getElementById('manufacturerFilters');
+            const modelFiltersEl = document.getElementById('modelFilters');
+            const categoryFiltersEl = document.getElementById('categoryFilters');
+            const modsGrid = document.getElementById('modsGrid');
+            const resultCount = document.getElementById('resultCount');
+            const activeFiltersEl = document.getElementById('activeFilters');
+            const emptyState = document.getElementById('emptyState');
+            const sidebarSearch = document.getElementById('sidebarSearch');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const clearAllBtn = document.getElementById('clearAllFilters');
+
+            // ============ RENDER SIDEBAR FILTERS ============
+            function renderManufacturerFilters() {
+                const counts = {};
+                manufacturers.forEach(m => {
+                    counts[m.name] = allMods.filter(mod => mod.manufacturer === m.name).length;
+                });
+                counts['all'] = allMods.length;
+
+                let html = `<li data-filter="manufacturer" data-value="all" class="${activeManufacturer === 'all' ? 'active' : ''}">
+                    All Manufacturers <span class="count">${counts['all']}</span>
+                </li>`;
+                manufacturers.forEach(m => {
+                    const isActive = activeManufacturer === m.name;
+                    html += `<li data-filter="manufacturer" data-value="${m.name}" class="${isActive ? 'active' : ''}">
+                        ${m.name} <span class="count">${counts[m.name]}</span>
+                    </li>`;
+                });
+                manufacturerFiltersEl.innerHTML = html;
+            }
+
+            function renderModelFilters() {
+                let availableModels = [];
+                if (activeManufacturer === 'all') {
+                    manufacturers.forEach(m => {
+                        m.models.forEach(model => availableModels.push(model));
+                    });
+                } else {
+                    const mfr = manufacturers.find(m => m.name === activeManufacturer);
+                    if (mfr) availableModels = [...mfr.models];
+                }
+
+                const counts = {};
+                availableModels.forEach(model => {
+                    counts[model] = allMods.filter(mod => mod.model === model &&
+                        (activeManufacturer === 'all' || mod.manufacturer === activeManufacturer)
+                    ).length;
+                });
+                counts['all'] = allMods.filter(mod =>
+                    activeManufacturer === 'all' || mod.manufacturer === activeManufacturer
+                ).length;
+
+                let html = `<li data-filter="model" data-value="all" class="${activeModel === 'all' ? 'active' : ''}">
+                    All Models <span class="count">${counts['all']}</span>
+                </li>`;
+                availableModels.forEach(model => {
+                    const isActive = activeModel === model;
+                    html += `<li data-filter="model" data-value="${model}" class="${isActive ? 'active' : ''}">
+                        ${model} <span class="count">${counts[model]}</span>
+                    </li>`;
+                });
+                modelFiltersEl.innerHTML = html;
+
+                // If active model is not in the available list, reset it
+                if (activeModel !== 'all' && !availableModels.includes(activeModel)) {
+                    activeModel = 'all';
+                    renderModelFilters();
+                }
+            }
+
+            // ============ FILTER LOGIC ============
+            function getFilteredMods() {
+                let filtered = [...allMods];
+
+                if (activeManufacturer !== 'all') {
+                    filtered = filtered.filter(mod => mod.manufacturer === activeManufacturer);
+                }
+                if (activeModel !== 'all') {
+                    filtered = filtered.filter(mod => mod.model === activeModel);
+                }
+                if (activeCategory !== 'all') {
+                    filtered = filtered.filter(mod => mod.category === activeCategory);
+                }
+                if (searchQuery.trim()) {
+                    const q = searchQuery.trim().toLowerCase();
+                    filtered = filtered.filter(mod =>
+                        mod.title.toLowerCase().includes(q) ||
+                        mod.manufacturer.toLowerCase().includes(q) ||
+                        mod.model.toLowerCase().includes(q) ||
+                        mod.author.toLowerCase().includes(q) ||
+                        mod.category.toLowerCase().includes(q)
+                    );
+                }
+
+                // Sort
+                switch (activeSort) {
+                    case 'popular':
+                        filtered.sort((a, b) => b.likes - a.likes);
+                        break;
+                    case 'newest':
+                        filtered.sort((a, b) => a.daysAgo - b.daysAgo);
+                        break;
+                    case 'downloads':
+                        filtered.sort((a, b) => b.downloads - a.downloads);
+                        break;
+                    case 'rating':
+                        filtered.sort((a, b) => b.rating - a.rating);
+                        break;
+                    default:
+                        filtered.sort((a, b) => b.likes - a.likes);
+                }
+
+                return filtered;
+            }
+
+            // ============ RENDER MODS ============
+            function renderMods() {
+                const filtered = getFilteredMods();
+                resultCount.textContent = `Showing ${filtered.length} mod${filtered.length !== 1 ? 's' : ''}`;
+
+                if (filtered.length === 0) {
+                    modsGrid.innerHTML = '';
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                    let html = '';
+                    filtered.forEach(mod => {
+                        const badgeHtml = mod.badgeType ?
+                            `<span class="mod-card-badge ${mod.badgeType}">${mod.badgeLabel}</span>` : '';
+                        const initials = mod.author.split('').filter((c, i) => i < 2).join('')
+                            .toUpperCase();
+                        const carEmojis = ['🚗', '🏎️', '🚓', '🚙', '🚕', '🚘'];
+                        const carEmoji = carEmojis[mod.id % carEmojis.length];
+
+                        html += `
+                        <div class="mod-card" data-mod-id="${mod.id}">
+                            <div class="mod-card-image">
+                                ${badgeHtml}
+                                <button class="mod-card-favorite" title="Add to favorites">♡</button>
+                                <span class="placeholder-car">${carEmoji}</span>
+                            </div>
+                            <div class="mod-card-body">
+                                <div class="mod-card-title">${escapeHtml(mod.title)}</div>
+                                <div class="mod-card-meta">
+                                    <span>${mod.manufacturer}</span>
+                                    <span class="separator"></span>
+                                    <span>${mod.model}</span>
+                                    <span class="separator"></span>
+                                    <span style="text-transform:capitalize">${mod.category.replace('-', ' ')}</span>
+                                </div>
+                                <div class="mod-card-footer">
+                                    <div class="mod-card-author">
+                                        <span class="avatar">${initials}</span>
+                                        <span>${mod.author}</span>
+                                    </div>
+                                    <div class="mod-card-stats">
+                                        <span>⭐ ${mod.rating}</span>
+                                        <span>⬇ ${formatNumber(mod.downloads)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    modsGrid.innerHTML = html;
+                }
+
+                // Update active filter tags
+                renderActiveFilters();
+            }
+
+            function renderActiveFilters() {
+                let tags = '';
+                if (activeManufacturer !== 'all') {
+                    tags +=
+                        `<span class="active-filter-tag" data-clear="manufacturer">🏭 ${activeManufacturer} <span class="remove">×</span></span>`;
+                }
+                if (activeModel !== 'all') {
+                    tags +=
+                        `<span class="active-filter-tag" data-clear="model">🚗 ${activeModel} <span class="remove">×</span></span>`;
+                }
+                if (activeCategory !== 'all') {
+                    const catLabel = activeCategory.replace('-', ' ');
+                    tags +=
+                        `<span class="active-filter-tag" data-clear="category">📦 ${catLabel.charAt(0).toUpperCase() + catLabel.slice(1)} <span class="remove">×</span></span>`;
+                }
+                if (searchQuery.trim()) {
+                    tags +=
+                        `<span class="active-filter-tag" data-clear="search">🔍 "${searchQuery.trim()}" <span class="remove">×</span></span>`;
+                }
+                if (tags === '' && activeManufacturer === 'all' && activeModel === 'all' && activeCategory === 'all' && !
+                    searchQuery.trim()) {
+                    activeFiltersEl.innerHTML =
+                        '<span style="color:var(--text-muted);font-size:0.8rem;">No filters active</span>';
+                } else {
+                    activeFiltersEl.innerHTML = tags;
+                }
+            }
+
+            // ============ EVENT HANDLERS ============
+            // Manufacturer click
+            manufacturerFiltersEl.addEventListener('click', (e) => {
+                const li = e.target.closest('li[data-filter="manufacturer"]');
+                if (!li) return;
+                const value = li.dataset.value;
+                activeManufacturer = value;
+                activeModel = 'all'; // Reset model when manufacturer changes
+                renderManufacturerFilters();
+                renderModelFilters();
+                renderMods();
+                closeMobileSidebar();
+            });
+
+            // Model click
+            modelFiltersEl.addEventListener('click', (e) => {
+                const li = e.target.closest('li[data-filter="model"]');
+                if (!li) return;
+                const value = li.dataset.value;
+                activeModel = value;
+                renderModelFilters();
+                renderMods();
+                closeMobileSidebar();
+            });
+
+            // Category click
+            categoryFiltersEl.addEventListener('click', (e) => {
+                const li = e.target.closest('li[data-filter="category"]');
+                if (!li) return;
+                const value = li.dataset.value;
+                activeCategory = value;
+                // Update active class
+                categoryFiltersEl.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+                renderMods();
+                closeMobileSidebar();
+            });
+
+            // Sort click
+            document.querySelector('.sort-bar').addEventListener('click', (e) => {
+                const option = e.target.closest('.sort-option');
+                if (!option) return;
+                const sortVal = option.dataset.sort;
+                activeSort = sortVal;
+                document.querySelectorAll('.sort-option').forEach(el => el.classList.remove('active'));
+                option.classList.add('active');
+                renderMods();
+            });
+
+            // Active filter tag clear
+            activeFiltersEl.addEventListener('click', (e) => {
+                const tag = e.target.closest('.active-filter-tag');
+                if (!tag) return;
+                const clearType = tag.dataset.clear;
+                if (clearType === 'manufacturer') {
+                    activeManufacturer = 'all';
+                    activeModel = 'all';
+                    renderManufacturerFilters();
+                    renderModelFilters();
+                } else if (clearType === 'model') {
+                    activeModel = 'all';
+                    renderModelFilters();
+                } else if (clearType === 'category') {
+                    activeCategory = 'all';
+                    categoryFiltersEl.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+                    const allCat = categoryFiltersEl.querySelector('li[data-value="all"]');
+                    if (allCat) allCat.classList.add('active');
+                } else if (clearType === 'search') {
+                    searchQuery = '';
+                    sidebarSearch.value = '';
+                }
+                renderMods();
+            });
+
+            // Clear all filters
+            clearAllBtn.addEventListener('click', () => {
+                activeManufacturer = 'all';
+                activeModel = 'all';
+                activeCategory = 'all';
+                searchQuery = '';
+                sidebarSearch.value = '';
+                activeSort = 'popular';
+                document.querySelectorAll('.sort-option').forEach(el => el.classList.remove('active'));
+                const popularSort = document.querySelector('.sort-option[data-sort="popular"]');
+                if (popularSort) popularSort.classList.add('active');
+                categoryFiltersEl.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+                const allCat = categoryFiltersEl.querySelector('li[data-value="all"]');
+                if (allCat) allCat.classList.add('active');
+                renderManufacturerFilters();
+                renderModelFilters();
+                renderMods();
+            });
+
+            // Sidebar search
+            sidebarSearch.addEventListener('input', () => {
+                searchQuery = sidebarSearch.value;
+                renderMods();
+            });
+
+            // Favorite button
+            modsGrid.addEventListener('click', (e) => {
+                const favBtn = e.target.closest('.mod-card-favorite');
+                if (favBtn) {
+                    e.stopPropagation();
+                    favBtn.classList.toggle('liked');
+                    favBtn.textContent = favBtn.classList.contains('liked') ? '♥' : '♡';
+                    return;
+                }
+                // Card click could open mod detail
+                const card = e.target.closest('.mod-card');
+                if (card && !e.target.closest('.mod-card-favorite')) {
+                    const modId = parseInt(card.dataset.modId);
+                    const mod = allMods.find(m => m.id === modId);
+                    if (mod) {
+                        alert(
+                            `🔧 ${mod.title}\n\nManufacturer: ${mod.manufacturer}\nModel: ${mod.model}\nCategory: ${mod.category.replace('-', ' ')}\nAuthor: ${mod.author}\nDownloads: ${formatNumber(mod.downloads)}\nRating: ⭐ ${mod.rating}\n\n(This is a demo — mod detail page would open here.)`
+                            );
+                    }
+                }
+            });
+
+            // Sidebar section collapse
+            document.querySelectorAll('.sidebar-section-title').forEach(title => {
+                title.addEventListener('click', () => {
+                    const section = title.parentElement;
+                    section.classList.toggle('collapsed');
+                });
+            });
+
+            // Mobile sidebar
+            function openMobileSidebar() {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMobileSidebar() {
+                if (window.innerWidth <= 900) {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('visible');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            mobileMenuBtn.addEventListener('click', () => {
+                if (sidebar.classList.contains('open')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            });
+            sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+            // Close sidebar on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeMobileSidebar();
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 900) {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('visible');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // ============ UTILS ============
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function formatNumber(num) {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                return num.toString();
+            }
+
+            // ============ INIT ============
+            function init() {
+                renderManufacturerFilters();
+                renderModelFilters();
+                renderMods();
+            }
+            init();
+
+            console.log('🏎️ GearHead Mods initialized!');
+            console.log(`   ${allMods.length} mods across ${manufacturers.length} manufacturers`);
+            console.log('   Try filtering by manufacturer → model → category!');
+        })();
+    </script>
+</body>
+</html>
